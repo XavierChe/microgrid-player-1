@@ -1,7 +1,7 @@
 # python 3
 # this class combines all basic features of a generic player
 import numpy as np
-import pandas as pa
+import pandas as pd
 random_lambda = np.random.rand(48)
 class Player:
 
@@ -80,7 +80,7 @@ class Player:
 		# reset all observed data
 		pass
 
-f=pa.read_csv(ev_scrnario, sep = ";","ev_scenarios.csv")
+f=pd.read_csv(ev_scrnario, sep = ";","ev_scenarios.csv")
 p=Player()
 p.__init__()
 p.set_scenario(f)
