@@ -13,7 +13,8 @@ class Player:
 		self.nb_fast=2
 		self.pslow=3
 		self.pfast=22
-		self.capacite=10
+		self.capacite_min=10
+		self.capacite=40
 		self.rho_c=0.95
 
 
@@ -28,42 +29,32 @@ class Player:
 		self.prices = prices
 
 	def compute_all_load(self):
-		load = np.zeros(self.horizon)
+		load = np.zeros(self.horizon+self.nb_slow+self.nb_fast)
 		# l est une liste temporaire, on reprend ses valeurs et on les réordonne avant de les mettre dans load
 
-		#on construit l en remplissant d'abord les voitures "slow" puis les "fast" pour chaque pas de temps
-		l=np.zeros(self.horizon)
-
-		#chargement prend en compte le chargement en cours pour chacun des véhicules
+		#chargement prend en compte le chargement pour chacun des véhicules
 		chargement=np.zeros(self.nb_slow+self.nb_fast)
 
-		for time in range(self.horizon):
-			#consom<40
-			consom=0
-
-			for i in range(self.nb_slow):
-				plus = self.rho_c * min(self.pslow, min((10 - chargement[i])/self.rho_c, 40 - consom))
-				chargement[i] += plus
-				consom += plus
-
-			for i in range(self.nb_slow,self.nb_slow+self.nb_fast):
-				plus=self.rho_c*min(self.pfast,min((10-chargement[i])/self.rho_c,40-consom))
-				chargement[i]+=plus
-				consom+=plus
-			l[time]=consom
-
-		#on réordonne les consomations en mettant à chaque fois la conso la plus importante sur le prix le faible restant
 		m = np.min(self.depart)
 		copie_prix=self.prices[:m].copy()
 		cpt=0
 		while cpt<m:
 			arg_min = np.argmin(copie_prix)
-			arg_max=np.argmax(l)
-			load[arg_min]=l[arg_max]
+			for i in range (self.nb_slow + self.nb_fast):
+				arg_min=np.argmin(chargement)
+				if (chargement[arg_min]<10):
+					if (i<self.nb_fast):
+						plus=min(self.pfast,(10-chargement[arg_min])/self.roh_c)
+						chargement[arg_min]+=plus*self.roh_c
+						load[arg_min]+=plus
+					else:
+						plus+=min(self.pslow,(10-chargement[arg_min])/self.roh_c)
+						chargement[arg_min]+=plus*self.roh_c
+						load[arg_min]+=plus
 			copie_prix[arg_min] = np.inf
-			l[arg_max] = 0
 			cpt+=1
-			#load[time] = self.compute_load(time)
+		for i in range (self.nb_slow + self.nb_fast):
+			load[self.horizon+i]=chargement[i]
 		print(load)
 		return load
 
@@ -80,18 +71,25 @@ class Player:
 		# reset all observed data
 		pass
 
-f=pa.read_csv(ev_scrnario, sep = ";","ev_scenarios.csv")
-p=Player()
-p.__init__()
-p.set_scenario(f)
-p.set_prices(random_lambda)
-
-l=p.compute_all_load()
-
-#fonction de cout qui ne prend pas encore en compte les amendes si les voitures ne sont pas chargées à temps
 def cout(p,l):
 	c=0
 	for time in range(48):
 		c+=l[time]*p[time]
+	for i in range(self.nb_slow+self.nb_fast):
+		if (l[self.horizon+i]<self.capacite_min):
+			c+=5
 	return c
-print(cout(p.prices,l))
+#print(cout(p.prices,l))
+
+if __name__=="__main__":
+	import os
+	print(os.getcwd())
+	f=pa.read_csv("C:\\Users\\xache\\Documents\\ENPC\\1A\\S2\\microgrid-player-1\\ev_scenarios.csv")
+	p=Player()
+	p.__init__()
+	p.set_scenario(f)
+	p.set_prices(random_lambda)
+
+	l=p.compute_all_load()
+
+#fonction de cout qui ne prend pas encore en compte les amendes si les voitures ne sont pas chargées à temps
