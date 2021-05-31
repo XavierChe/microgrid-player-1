@@ -1,7 +1,7 @@
 # python 3
 # this class combines all basic features of a generic player
 import numpy as np
-import pandas as pa
+import pandas as pd
 random_lambda = np.random.rand(48)
 class Player:
 
@@ -71,6 +71,17 @@ class Player:
 		# reset all observed data
 		pass
 
+
+f=pd.read_csv(ev_scrnario, sep = ";","ev_scenarios.csv")
+p=Player()
+p.__init__()
+p.set_scenario(f)
+p.set_prices(random_lambda)
+
+l=p.compute_all_load()
+
+#fonction de cout qui ne prend pas encore en compte les amendes si les voitures ne sont pas chargées à temps
+
 def cout(p,l):
 	c=0
 	for time in range(48):
@@ -79,17 +90,10 @@ def cout(p,l):
 		if (l[self.horizon+i]<self.capacite_min):
 			c+=5
 	return c
+
 #print(cout(p.prices,l))
 
-if __name__=="__main__":
-	import os
-	print(os.getcwd())
-	f=pa.read_csv("C:\\Users\\xache\\Documents\\ENPC\\1A\\S2\\microgrid-player-1\\ev_scenarios.csv")
-	p=Player()
-	p.__init__()
-	p.set_scenario(f)
-	p.set_prices(random_lambda)
 
-	l=p.compute_all_load()
 
-#fonction de cout qui ne prend pas encore en compte les amendes si les voitures ne sont pas chargées à temps
+print(cout(p.prices,l))
+>>>>>>> 1a6e7526c2dfb05dbb91017ede5b14eb79086fc7
